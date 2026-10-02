@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071c2c">
+<title>JourneyQuest VR — Greater Manchester</title>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<style>
+html,body{margin:0;height:100%;background:#061824;color:#fff;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+#hud{position:fixed;z-index:20;left:0;right:0;top:0;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(3,16,28,.92),rgba(3,16,28,.2));pointer-events:none}
+.brand{font-weight:800}.brand span{font-weight:500;opacity:.7} #progress{font-size:13px}
+#card{position:fixed;z-index:25;left:50%;bottom:18px;transform:translateX(-50%);width:min(760px,calc(100% - 30px));background:rgba(5,24,38,.94);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:18px 20px;box-shadow:0 14px 50px rgba(0,0,0,.35)}
+#card h1{font-size:24px;margin:0 0 7px} #card p{margin:0 0 12px;color:#cbe8f2;line-height:1.4}
+.choices{display:flex;gap:10px;flex-wrap:wrap}.choices button{border:0;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;background:#ffca43;color:#15202b}.choices button.alt{background:#e8f6fa}
+.tiny{font-size:12px;opacity:.7;margin-top:10px} #startVR{position:fixed;right:16px;bottom:16px;z-index:40;border:0;border-radius:999px;padding:12px 16px;background:#fff;color:#082231;font-weight:800}
+.good{color:#77e7a8}.dev{color:#ffd47a}
+</style>
+</head>
+<body>
+<div id="hud"><div class="brand">JourneyQuest VR <span>by Neptune’s Submerge</span></div><div id="progress">Mission 1 of 5</div></div>
+<div id="card"><h1 id="title">My First Independent Journey</h1><p id="copy"></p><div class="choices" id="choices"></div><div class="tiny">Ages 8–13 · Approx. 5 minutes · Meta Quest browser compatible</div></div>
+<button id="startVR">Enter VR</button>
+
+<a-scene embedded vr-mode-ui="enabled:true" renderer="colorManagement:true;antialias:true" background="color:#86cce8">
+  <a-plane rotation="-90 0 0" width="30" height="30" color="#94b77f"></a-plane>
+  <a-sky color="#9bd8ef"></a-sky>
+  <a-box position="0 1 -5" depth=".25" height="2.3" width="5" color="#123d55"></a-box>
+  <a-text id="worldTitle" value="GREATER MANCHESTER" align="center" color="#fff" width="5" position="0 1.7 -4.85"></a-text>
+  <a-text id="worldHint" value="PLAN YOUR ROUTE" align="center" color="#ffdf7b" width="4.5" position="0 .9 -4.84"></a-text>
+  <a-entity position="-3 0 -1"><a-box position="0 .9 0" width="2.4" height="1.5" depth="1" color="#f2c94c"></a-box><a-text value="BUS" align="center" color="#14202b" width="3" position="0 1.1 .51"></a-text></a-entity>
+  <a-entity position="0 0 -2"><a-box position="0 .9 0" width="2.4" height="1.5" depth="1" color="#56c6b6"></a-box><a-text value="TRAM" align="center" color="#092228" width="3" position="0 1.1 .51"></a-text></a-entity>
+  <a-entity position="3 0 -1"><a-box position="0 .9 0" width="2.4" height="1.5" depth="1" color="#d7e7ee"></a-box><a-text value="TRAIN" align="center" color="#092228" width="3" position="0 1.1 .51"></a-text></a-entity>
+  <a-entity id="rig" position="0 1.6 4"><a-camera look-controls wasd-controls><a-cursor color="#ffca43" fuse="true" fuse-timeout="1200"></a-cursor></a-camera><a-entity laser-controls="hand:right"></a-entity></a-entity>
+</a-scene>
+
+<script>
+const missions=[
+{t:"Plan the journey",c:"You need to get to Manchester Airport. What is the best first step?",a:["Check the route and destination","Follow the first bus you see","Ask another child to decide"],ok:0,h:"PLAN YOUR ROUTE"},
+{t:"At the bus stop",c:"The bus is approaching. What should you do?",a:["Stand safely back and signal the bus","Step into the road so the driver sees you","Run beside the bus"],ok:0,h:"WAIT SAFELY"},
+{t:"Change at the interchange",c:"Your tram is cancelled. What is the safest next move?",a:["Check the information screen or ask staff","Follow a stranger","Leave the station and guess"],ok:0,h:"ASK • CHECK • DECIDE"},
+{t:"Manchester Airport",c:"You have arrived for a flight. Which direction do you choose first?",a:["Departures","Arrivals","Car park"],ok:0,h:"FOLLOW THE SIGNS"},
+{t:"Separated from your group",c:"You cannot see your teacher. What should you do?",a:["Stay in a safe public area and ask uniformed staff","Leave the station to search outside","Keep walking until you recognise somewhere"],ok:0,h:"STAY SAFE • GET HELP"}];
+let i=0,correct=0;
+const title=document.getElementById('title'),copy=document.getElementById('copy'),choices=document.getElementById('choices'),prog=document.getElementById('progress'),wt=document.getElementById('worldTitle'),wh=document.getElementById('worldHint');
+function render(){if(i>=missions.length)return finish();const m=missions[i];title.textContent=m.t;copy.textContent=m.c;prog.textContent='Mission '+(i+1)+' of 5';wt.setAttribute('value',i===3?'MANCHESTER AIRPORT':'GREATER MANCHESTER');wh.setAttribute('value',m.h);choices.innerHTML='';m.a.forEach((x,j)=>{const b=document.createElement('button');b.textContent=x;if(j)b.className='alt';b.onclick=()=>answer(j);choices.appendChild(b)})}
+function answer(j){const m=missions[i];if(j===m.ok){correct++;copy.innerHTML='<strong class="good">Great choice.</strong>';i++;setTimeout(render,450)}else copy.innerHTML='<strong class="dev">Try again.</strong> Think about safety, signs and asking trusted transport staff for help.'}
+function finish(){prog.textContent='Mission complete';wt.setAttribute('value','MISSION COMPLETE');wh.setAttribute('value','CONFIDENT TRAVELLER');title.textContent='Journey complete';copy.innerHTML='Teacher summary: <strong>'+correct+'/5 first-choice decisions correct.</strong><br>Journey planning: Secure · Safe travel: Secure · Help-seeking: Secure';choices.innerHTML='<button onclick="location.reload()">Restart mission</button>'}
+document.getElementById('startVR').onclick=()=>{const s=document.querySelector('a-scene');if(s&&s.enterVR)s.enterVR()};render();
+</script>
+</body></html>
